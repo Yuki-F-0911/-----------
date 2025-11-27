@@ -73,9 +73,7 @@ export default async function ReviewDetailPage({ params }: { params: { id: strin
                 </div>
                 <div className="ml-4 text-right">
                   <div className="text-4xl font-bold text-gray-900">
-                    {typeof review.overallRating === 'number' 
-                      ? review.overallRating.toFixed(1) 
-                      : parseFloat(String(review.overallRating)).toFixed(1)}
+                    {parseFloat(String(review.overallRating)).toFixed(1)}
                   </div>
                   <div className="text-sm text-gray-500">/10.0</div>
                 </div>
