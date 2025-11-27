@@ -5,52 +5,57 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 
 async function getShoe(id: string) {
-  const shoe = await prisma.shoe.findUnique({
-    where: { id },
-    include: {
-      reviews: {
-        where: {
-          isPublished: true,
-          isDraft: false,
+  try {
+    const shoe = await prisma.shoe.findUnique({
+      where: { id },
+      include: {
+        reviews: {
+          where: {
+            isPublished: true,
+            isDraft: false,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+            shoe: {
+              select: {
+                id: true,
+                brand: true,
+                modelName: true,
+                category: true,
+                imageUrls: true,
+              },
+            },
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatarUrl: true,
-            },
+        _count: {
+          select: {
+            reviews: true,
           },
-          shoe: {
-            select: {
-              id: true,
-              brand: true,
-              modelName: true,
-              category: true,
-              imageUrls: true,
-            },
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
         },
       },
-      _count: {
-        select: {
-          reviews: true,
-        },
-      },
-    },
-  })
+    })
 
-  return shoe
+    return shoe
+  } catch (error) {
+    console.error('Failed to fetch shoe:', error)
+    return null
+  }
 }
 
 export default async function ShoeDetailPage({ params }: { params: { id: string } }) {

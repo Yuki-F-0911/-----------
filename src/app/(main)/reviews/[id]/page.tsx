@@ -8,42 +8,47 @@ import { formatDate } from '@/lib/utils/date'
 import Image from 'next/image'
 
 async function getReview(id: string) {
-  const review = await prisma.review.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
+  try {
+    const review = await prisma.review.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        shoe: {
+          select: {
+            id: true,
+            brand: true,
+            modelName: true,
+            category: true,
+            releaseYear: true,
+            officialPrice: true,
+          },
+        },
+        aiSources: {
+          orderBy: {
+            scrapedAt: 'desc',
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
         },
       },
-      shoe: {
-        select: {
-          id: true,
-          brand: true,
-          modelName: true,
-          category: true,
-          releaseYear: true,
-          officialPrice: true,
-        },
-      },
-      aiSources: {
-        orderBy: {
-          scrapedAt: 'desc',
-        },
-      },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
-      },
-    },
-  })
+    })
 
-  return review
+    return review
+  } catch (error) {
+    console.error('Failed to fetch review:', error)
+    return null
+  }
 }
 
 export default async function ReviewDetailPage({ params }: { params: { id: string } }) {

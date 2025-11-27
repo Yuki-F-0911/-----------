@@ -5,59 +5,71 @@ import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 
 async function getReviews(page: number = 1, pageSize: number = 12) {
-  const skip = (page - 1) * pageSize
+  try {
+    const skip = (page - 1) * pageSize
 
-  const [reviews, total] = await Promise.all([
-    prisma.review.findMany({
-      where: {
-        isPublished: true,
-        isDraft: false,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where: {
+          isPublished: true,
+          isDraft: false,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+          shoe: {
+            select: {
+              id: true,
+              brand: true,
+              modelName: true,
+              category: true,
+              imageUrls: true,
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
           },
         },
-        shoe: {
-          select: {
-            id: true,
-            brand: true,
-            modelName: true,
-            category: true,
-            imageUrls: true,
-          },
+        orderBy: {
+          createdAt: 'desc',
         },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          },
+        skip,
+        take: pageSize,
+      }),
+      prisma.review.count({
+        where: {
+          isPublished: true,
+          isDraft: false,
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      skip,
-      take: pageSize,
-    }),
-    prisma.review.count({
-      where: {
-        isPublished: true,
-        isDraft: false,
-      },
-    }),
-  ])
+      }),
+    ])
 
-  return {
-    reviews,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
+    return {
+      reviews,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    }
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error)
+    // エラーが発生した場合は空の結果を返す
+    return {
+      reviews: [],
+      total: 0,
+      page,
+      pageSize,
+      totalPages: 0,
+    }
   }
 }
 

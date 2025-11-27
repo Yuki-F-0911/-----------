@@ -8,43 +8,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 export const dynamic = 'force-dynamic'
 
 async function getLatestReviews() {
-  const reviews = await prisma.review.findMany({
-    where: {
-      isPublished: true,
-      isDraft: false,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
+  try {
+    const reviews = await prisma.review.findMany({
+      where: {
+        isPublished: true,
+        isDraft: false,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        shoe: {
+          select: {
+            id: true,
+            brand: true,
+            modelName: true,
+            category: true,
+            imageUrls: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
         },
       },
-      shoe: {
-        select: {
-          id: true,
-          brand: true,
-          modelName: true,
-          category: true,
-          imageUrls: true,
-        },
+      orderBy: {
+        createdAt: 'desc',
       },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: 6,
-  })
+      take: 6,
+    })
 
-  return reviews
+    return reviews
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error)
+    // エラーが発生した場合は空配列を返す
+    return []
+  }
 }
 
 export default async function HomePage() {

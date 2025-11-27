@@ -8,19 +8,25 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 
 async function getShoes() {
-  return await prisma.shoe.findMany({
-    orderBy: [
-      { brand: 'asc' },
-      { modelName: 'asc' },
-    ],
-    include: {
-      _count: {
-        select: {
-          reviews: true,
+  try {
+    return await prisma.shoe.findMany({
+      orderBy: [
+        { brand: 'asc' },
+        { modelName: 'asc' },
+      ],
+      include: {
+        _count: {
+          select: {
+            reviews: true,
+          },
         },
       },
-    },
-  })
+    })
+  } catch (error) {
+    console.error('Failed to fetch shoes:', error)
+    // エラーが発生した場合は空配列を返す
+    return []
+  }
 }
 
 export default async function ShoesPage() {
