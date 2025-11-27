@@ -4,12 +4,23 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // サーバーコンポーネント専用パッケージ（webpackのバンドルから除外）
-  serverComponentsExternalPackages: ['cheerio', 'undici'],
-  
   // webpack設定: cheerioとundiciをサーバーサイドのみで使用
   webpack: (config, { isServer }) => {
-    if (!isServer) {
+    if (isServer) {
+      // サーバーサイド: undiciを外部化（Node.jsの組み込みモジュールとして扱う）
+      // cheerioは動的インポートで使用されるため、webpackのバンドルから除外される
+      const originalExternals = config.externals
+      config.externals = [
+        ...(Array.isArray(originalExternals) ? originalExternals : [originalExternals]),
+        ({ request }, callback) => {
+          // undiciを含むすべてのリクエストを外部化
+          if (request && (request.includes('undici') || request === 'undici')) {
+            return callback(null, `commonjs ${request}`)
+          }
+          callback()
+        }
+      ]
+    } else {
       // クライアントサイドではcheerioとundiciを使用しない
       config.resolve.fallback = {
         ...config.resolve.fallback,
