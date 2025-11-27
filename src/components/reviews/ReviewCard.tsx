@@ -77,9 +77,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
             </div>
             <div className="ml-4 flex flex-col items-end">
               <div className="text-2xl font-bold text-gray-900">
-                {typeof review.overallRating === 'number' 
-                  ? review.overallRating.toFixed(1) 
-                  : parseFloat(String(review.overallRating)).toFixed(1)}
+                {parseFloat(String(review.overallRating)).toFixed(1)}
               </div>
               <div className="text-xs text-gray-500">/10.0</div>
             </div>
