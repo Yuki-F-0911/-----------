@@ -15,7 +15,7 @@ import {
   CurationResult,
   SourceType,
 } from './types'
-import { collectRakutenReviews } from './rakuten-api'
+import { collectRakutenReviewStats, RakutenReviewStats } from './rakuten-api'
 import { searchYouTubeVideos } from '@/lib/ai/youtube-search'
 
 // 以下のインポートは著作権保護のため削除されました:
@@ -51,15 +51,31 @@ export async function aggregateReviews(
   // 楽天API
   if (enabledSources.includes('RAKUTEN') && process.env.RAKUTEN_APPLICATION_ID) {
     collectionPromises.push(
-      collectRakutenReviews(
+      collectRakutenReviewStats(
         brand,
         modelName,
         process.env.RAKUTEN_APPLICATION_ID,
         process.env.RAKUTEN_AFFILIATE_ID
       )
-        .then(reviews => {
+        .then((stats: RakutenReviewStats[]) => {
+          const reviews: CuratedReview[] = stats.map(stat => ({
+            id: `rakuten-${stat.productUrl}`,
+            sourceType: 'RAKUTEN' as SourceType,
+            sourceUrl: stat.productUrl,
+            sourceTitle: stat.productName,
+            content: `楽天市場のレビュー統計: ${stat.reviewCount}件の評価, 平均${stat.averageRating}点`,
+            rating: stat.averageRating,
+            ratingScale: 5,
+            normalizedRating: stat.normalizedRating,
+            imageUrls: [],
+            pros: [],
+            cons: [],
+            locale: 'ja',
+            relevanceScore: 0.9,
+            collectedAt: stat.collectedAt,
+          }))
           allReviews.push(...reviews)
-          console.log(`[Rakuten] Collected ${reviews.length} reviews`)
+          console.log(`[Rakuten] Collected stats for ${stats.length} products`)
         })
         .catch(err => {
           errors.push(`Rakuten: ${err.message}`)
@@ -178,7 +194,7 @@ async function collectYoutubeReviews(
  * ⚠️ この機能は著作権保護のため無効化されています
  * Web記事の全文スクレイピングは著作権侵害になるため削除されました
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 async function collectWebArticleReviews(
   _brand: string,
   _modelName: string
@@ -269,7 +285,7 @@ function deduplicateReviews(reviews: CuratedReview[]): CuratedReview[] {
   for (const review of reviews) {
     // コンテンツのハッシュで重複チェック
     const contentKey = review.content.substring(0, 100).toLowerCase().replace(/\s+/g, '')
-    
+
     if (!seen.has(contentKey)) {
       seen.add(contentKey)
       unique.push(review)
@@ -399,7 +415,7 @@ function inferRecommendedFor(reviews: CuratedReview[]): string[] {
 
   for (const review of reviews) {
     const text = (review.content + ' ' + review.pros.join(' ') + ' ' + review.cons.join(' ')).toLowerCase()
-    
+
     for (const [category, kws] of Object.entries(keywords)) {
       for (const kw of kws) {
         if (text.includes(kw.toLowerCase())) {

@@ -4,7 +4,7 @@ export const curatedSourceSchema = z.object({
   title: z.string().min(2).max(200),
   url: z.string().url(),
   type: z.enum(['OFFICIAL', 'MARKETPLACE', 'SNS', 'VIDEO', 'ARTICLE', 'COMMUNITY']),
-  platform: z.string().optional(),
+  platform: z.string().min(1),
   excerpt: z.string().max(2000).optional(),
   author: z.string().max(120).optional(),
   publishedAt: z.coerce.date().optional(),

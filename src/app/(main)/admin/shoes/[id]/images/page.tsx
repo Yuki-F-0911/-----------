@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -33,11 +33,7 @@ export default function ShoeImagesPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string>('')
 
-  useEffect(() => {
-    fetchData()
-  }, [shoeId])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       // シューズ情報を取得
@@ -54,7 +50,11 @@ export default function ShoeImagesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [shoeId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -294,13 +294,12 @@ export default function ShoeImagesPage() {
                       </span>
                     )}
                     <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        item.status === 'APPROVED'
-                          ? 'bg-green-100 text-green-800'
-                          : item.status === 'PENDING'
+                      className={`text-xs px-2 py-1 rounded-full ${item.status === 'APPROVED'
+                        ? 'bg-green-100 text-green-800'
+                        : item.status === 'PENDING'
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
-                      }`}
+                        }`}
                     >
                       {item.status === 'APPROVED' && '承認済み'}
                       {item.status === 'PENDING' && '承認待ち'}

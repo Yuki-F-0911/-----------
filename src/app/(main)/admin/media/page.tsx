@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -32,11 +32,7 @@ export default function AdminMediaPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  useEffect(() => {
-    fetchMedia()
-  }, [statusFilter, page])
-
-  const fetchMedia = async () => {
+  const fetchMedia = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -53,7 +49,11 @@ export default function AdminMediaPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, page])
+
+  useEffect(() => {
+    fetchMedia()
+  }, [fetchMedia])
 
   const handleAction = async (mediaId: string, action: 'approve' | 'reject') => {
     try {
@@ -127,11 +127,10 @@ export default function AdminMediaPage() {
                 setStatusFilter(status)
                 setPage(1)
               }}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                statusFilter === status
-                  ? 'bg-indigo-600 text-white shadow-lg'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${statusFilter === status
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
             >
               {status === 'PENDING' && '承認待ち'}
               {status === 'APPROVED' && '承認済み'}
@@ -171,9 +170,8 @@ export default function AdminMediaPage() {
                     </span>
                   )}
                   <span
-                    className={`absolute top-2 right-2 text-xs px-2 py-1 rounded-full border ${
-                      statusColors[item.status]
-                    }`}
+                    className={`absolute top-2 right-2 text-xs px-2 py-1 rounded-full border ${statusColors[item.status]
+                      }`}
                   >
                     {item.status === 'PENDING' && '承認待ち'}
                     {item.status === 'APPROVED' && '承認済み'}

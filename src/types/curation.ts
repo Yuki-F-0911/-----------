@@ -1,4 +1,5 @@
-import type { CuratedSourceStatus, CuratedSourceType } from '@prisma/client'
+export type CuratedSourceType = 'OFFICIAL' | 'MARKETPLACE' | 'SNS' | 'VIDEO' | 'ARTICLE' | 'COMMUNITY'
+export type CuratedSourceStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
 export interface CuratedSource {
   id: string

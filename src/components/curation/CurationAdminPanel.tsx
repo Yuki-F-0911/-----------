@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CuratedSourceType } from '@prisma/client'
+import type { CuratedSourceType } from '@/types/curation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 
@@ -14,15 +14,27 @@ interface CurationAdminPanelProps {
   shoes: ShoeOption[]
 }
 
-const curatedTypeOptions = Object.values(CuratedSourceType)
+const curatedTypeOptions: CuratedSourceType[] = [
+  'OFFICIAL',
+  'MARKETPLACE',
+  'SNS',
+  'VIDEO',
+  'ARTICLE',
+  'COMMUNITY',
+]
 
 export function CurationAdminPanel({ shoes }: CurationAdminPanelProps) {
   const defaultShoeId = useMemo(() => shoes[0]?.id ?? '', [shoes])
   const [selectedShoe, setSelectedShoe] = useState(defaultShoeId)
-  const [manualPayload, setManualPayload] = useState({
+  const [manualPayload, setManualPayload] = useState<{
+    title: string
+    url: string
+    type: CuratedSourceType
+    excerpt: string
+  }>({
     title: '',
     url: '',
-    type: CuratedSourceType.ARTICLE,
+    type: 'ARTICLE',
     excerpt: '',
   })
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null)
