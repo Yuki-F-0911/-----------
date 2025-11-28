@@ -8,6 +8,11 @@ export default async function AdminCurationPage() {
   const isAdmin = session?.user?.email && isAdminEmail(session.user.email)
 
   if (!isAdmin) {
+    console.log('Admin Access Denied:', {
+      email: session?.user?.email,
+      isAdmin,
+      envAdminEmails: process.env.ADMIN_EMAILS
+    })
     return (
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-gray-900">管理者専用ページ</h1>
@@ -28,7 +33,7 @@ export default async function AdminCurationPage() {
     },
   })
 
-  const shoeOptions = shoes.map((shoe) => ({
+  const shoeOptions = shoes.map((shoe: { id: string; brand: string; modelName: string }) => ({
     id: shoe.id,
     label: `${shoe.brand} ${shoe.modelName}`,
   }))

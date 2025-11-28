@@ -140,7 +140,7 @@ async function generateWithOpenAI(prompt: string, apiKey: string): Promise<Summa
  */
 async function generateWithGemini(prompt: string, apiKey: string): Promise<SummarizedReview> {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-1.5-flash'}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: {
@@ -176,28 +176,23 @@ async function generateWithGemini(prompt: string, apiKey: string): Promise<Summa
     throw new Error('Gemini APIからの応答が空です')
   }
 
-  // JSONコードブロックを除去
-  let jsonText = content.trim()
-  if (jsonText.startsWith('```json')) {
-    jsonText = jsonText.slice(7)
-  }
-  if (jsonText.startsWith('```')) {
-    jsonText = jsonText.slice(3)
-  }
-  if (jsonText.endsWith('```')) {
-    jsonText = jsonText.slice(0, -3)
-  }
-  jsonText = jsonText.trim()
+  // JSONを抽出してパース
+  try {
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    const jsonText = jsonMatch ? jsonMatch[0] : content;
+    const result = JSON.parse(jsonText);
 
-  // JSONをパース
-  const result = JSON.parse(jsonText)
-  return {
-    title: result.title || 'レビュー要約',
-    overallRating: result.overall_rating || 3,
-    pros: result.pros || [],
-    cons: result.cons || [],
-    recommendedFor: result.recommended_for,
-    summary: result.summary || '',
+    return {
+      title: result.title || 'レビュー要約',
+      overallRating: result.overall_rating || 3,
+      pros: result.pros || [],
+      cons: result.cons || [],
+      recommendedFor: result.recommended_for,
+      summary: result.summary || '',
+    }
+  } catch (error) {
+    console.error('Failed to parse JSON from Gemini:', content);
+    throw new Error('Geminiからの応答が有効なJSONではありません');
   }
 }
 

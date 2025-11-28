@@ -1,0 +1,24 @@
+﻿Prisma schema loaded from prisma\schema.prisma
+Environment variables loaded from .env
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.ynygmievhiofyossumck.supabase.co:5432"
+
+- Introspecting based on datasource defined in prisma\schema.prisma
+笨・Introspecting based on datasource defined in prisma\schema.prisma
+
+node.exe : Error: P1001
+発生場所 行:1 文字:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\
+yuki0\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Err 
+   or: P1001:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Can't reach database server at `db.ynygmievhiofyo
+ssumck.supabase.co`:`5432`
+
+Please make sure your database server is running 
+at `db.ynygmievhiofyossumck.supabase.co`:`5432`.
+

@@ -3,7 +3,7 @@ const nextConfig = {
   // 本番環境での最適化設定
   reactStrictMode: true,
   swcMinify: true,
-  
+
   // webpack設定: cheerioとundiciをサーバーサイドのみで使用
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -30,7 +30,7 @@ const nextConfig = {
     }
     return config
   },
-  
+
   // 画像の最適化設定
   images: {
     remotePatterns: [
@@ -92,6 +92,16 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.asics.com',
+      },
+      // Google
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      // GitHub
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
       },
     ],
     // 画像の最適化を有効化
