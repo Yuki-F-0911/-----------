@@ -55,34 +55,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
   try {
     const body = await request.json()
     const payload = curatedSourceSchema.parse(body)
-    
-    // URLからplatformを抽出
-    let platform = payload.platform
-    if (!platform) {
-      try {
-        const urlObj = new URL(payload.url)
-        platform = urlObj.hostname.replace('www.', '')
-      } catch {
-        platform = 'unknown'
-      }
-    }
-    
     const record = await prisma.curatedSource.create({
       data: {
         shoeId: shoe.id,
-        type: payload.type,
-        title: payload.title,
-        url: payload.url,
-        platform,
-        excerpt: payload.excerpt,
-        author: payload.author,
-        publishedAt: payload.publishedAt,
-        thumbnailUrl: payload.thumbnailUrl,
-        tags: payload.tags || [],
+        ...payload,
         language: shoe.locale?.split('-')[0] || 'ja',
         country: shoe.region,
         curatedById: session.user.id,
         reliability: reliabilityScore(payload.type),
+        tags: payload.tags || [],
       },
     })
 

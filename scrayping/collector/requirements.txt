@@ -1,0 +1,24 @@
+# レビュー収集スクリプト用の依存関係
+
+# HTTP通信
+requests>=2.31.0
+
+# データベース
+psycopg2-binary>=2.9.9
+
+# 環境変数
+python-dotenv>=1.0.0
+
+# Reddit API
+praw>=7.7.0
+
+# X (Twitter) API
+tweepy>=4.14.0
+
+# YouTube文字起こし（オプション）
+yt-dlp>=2023.12.30
+openai-whisper>=20231117
+
+# AI要約（オプション）
+google-generativeai>=0.3.0
+

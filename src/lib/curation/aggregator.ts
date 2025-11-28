@@ -15,37 +15,13 @@ import {
   CurationResult,
   SourceType,
 } from './types'
-import { collectRakutenReviewStats, type RakutenReviewStats } from './rakuten-api'
+import { collectRakutenReviews } from './rakuten-api'
 import { searchYouTubeVideos } from '@/lib/ai/youtube-search'
 
 // 以下のインポートは著作権保護のため削除されました:
 // - collectKakakuReviews（価格.comスクレイピング）
 // - collectRedditReviews（Redditコンテンツ収集）
 // - scrapeWebArticle（Web記事スクレイピング）
-
-/**
- * 楽天の統計情報をCuratedReview形式に変換
- */
-function convertRakutenStatsToReviews(stats: RakutenReviewStats[]): CuratedReview[] {
-  return stats.map(stat => ({
-    id: `rakuten-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    sourceType: 'RAKUTEN' as SourceType,
-    sourceUrl: stat.productUrl,
-    sourceTitle: stat.productName,
-    sourceAuthor: '楽天市場',
-    content: `楽天市場での商品情報。詳細は楽天市場のページでご確認ください。`,
-    ratingScale: 5,
-    normalizedRating: stat.normalizedRating,
-    reviewerName: '楽天市場',
-    reviewDate: stat.collectedAt,
-    imageUrls: [],
-    pros: [],
-    cons: [],
-    locale: 'ja',
-    relevanceScore: 0.7,
-    collectedAt: stat.collectedAt,
-  }))
-}
 
 /**
  * 複数ソースからレビューを収集・統合
@@ -75,17 +51,15 @@ export async function aggregateReviews(
   // 楽天API
   if (enabledSources.includes('RAKUTEN') && process.env.RAKUTEN_APPLICATION_ID) {
     collectionPromises.push(
-      collectRakutenReviewStats(
+      collectRakutenReviews(
         brand,
         modelName,
         process.env.RAKUTEN_APPLICATION_ID,
         process.env.RAKUTEN_AFFILIATE_ID
       )
-        .then(stats => {
-          // 統計情報をCuratedReview形式に変換
-          const reviews = convertRakutenStatsToReviews(stats)
+        .then(reviews => {
           allReviews.push(...reviews)
-          console.log(`[Rakuten] Collected ${reviews.length} product stats`)
+          console.log(`[Rakuten] Collected ${reviews.length} reviews`)
         })
         .catch(err => {
           errors.push(`Rakuten: ${err.message}`)
@@ -198,7 +172,20 @@ async function collectYoutubeReviews(
   }
 }
 
-// Web記事レビュー収集機能は著作権保護のため削除されました
+/**
+ * Web記事レビューを収集
+ * 
+ * ⚠️ この機能は著作権保護のため無効化されています
+ * Web記事の全文スクレイピングは著作権侵害になるため削除されました
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function collectWebArticleReviews(
+  _brand: string,
+  _modelName: string
+): Promise<CuratedReview[]> {
+  console.warn('Web記事スクレイピングは著作権保護のため無効化されています')
+  return []
+}
 
 /**
  * 地域に基づくデフォルトソース

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -32,7 +32,11 @@ export default function AdminMediaPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const fetchMedia = useCallback(async () => {
+  useEffect(() => {
+    fetchMedia()
+  }, [statusFilter, page])
+
+  const fetchMedia = async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -49,11 +53,7 @@ export default function AdminMediaPage() {
     } finally {
       setLoading(false)
     }
-  }, [statusFilter, page])
-
-  useEffect(() => {
-    fetchMedia()
-  }, [fetchMedia])
+  }
 
   const handleAction = async (mediaId: string, action: 'approve' | 'reject') => {
     try {

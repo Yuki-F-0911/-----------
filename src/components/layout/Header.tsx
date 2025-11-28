@@ -54,34 +54,53 @@ export function Header() {
                 管理者 ▼
               </button>
               {showAdminMenu && (
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                  <div className="px-4 py-1 text-xs font-medium text-gray-400">シューズ・画像</div>
                   <Link
                     href="/admin/shoes"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setShowAdminMenu(false)}
                   >
-                    シューズ管理
+                    📦 シューズ管理
                   </Link>
                   <Link
                     href="/admin/media"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setShowAdminMenu(false)}
                   >
-                    画像管理
+                    🖼️ 画像管理
+                  </Link>
+                  <div className="my-1 border-t border-gray-100"></div>
+                  <div className="px-4 py-1 text-xs font-medium text-gray-400">レビュー収集</div>
+                  <Link
+                    href="/admin/reviews/collect"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setShowAdminMenu(false)}
+                  >
+                    📥 レビュー収集
+                  </Link>
+                  <Link
+                    href="/admin/reviews/summarize"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setShowAdminMenu(false)}
+                  >
+                    ✨ レビュー要約
                   </Link>
                   <Link
                     href="/admin/curation"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setShowAdminMenu(false)}
                   >
-                    キュレーション
+                    📋 キュレーション
                   </Link>
+                  <div className="my-1 border-t border-gray-100"></div>
+                  <div className="px-4 py-1 text-xs font-medium text-gray-400">システム</div>
                   <Link
-                    href="/admin/reviews/auto-curate"
+                    href="/admin/system"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setShowAdminMenu(false)}
                   >
-                    AI自動キュレート
+                    ⚙️ システム設定
                   </Link>
                 </div>
               )}
