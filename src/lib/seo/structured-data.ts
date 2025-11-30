@@ -25,7 +25,8 @@ export function generateOrganizationSchema() {
     logo: SITE_INFO.logo,
     description: SITE_INFO.description,
     sameAs: [
-      // SNSリンクがあれば追加
+      'https://twitter.com/shoesreview_jp', // 仮のTwitterアカウント
+      'https://www.instagram.com/shoesreview_jp', // 仮のInstagramアカウント
     ],
     contactPoint: {
       '@type': 'ContactPoint',
@@ -87,11 +88,11 @@ export function generateProductSchema(
   // 平均評価を計算
   let aggregateRating = null
   if (shoe.reviews && shoe.reviews.length > 0) {
-    const ratings = shoe.reviews.map(r => 
+    const ratings = shoe.reviews.map(r =>
       typeof r.overallRating === 'number' ? r.overallRating : parseFloat(String(r.overallRating)) || 0
     )
     const avgRating = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-    
+
     aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: Math.round(avgRating * 10) / 10,
@@ -113,6 +114,7 @@ export function generateProductSchema(
     },
     category: shoe.category,
     url: `${SITE_INFO.url}/shoes/${shoe.id}`,
+    // 追加: SKUやMPNがあればここに追加推奨
   }
 
   // 画像がある場合
@@ -128,6 +130,7 @@ export function generateProductSchema(
       priceCurrency: 'JPY',
       availability: 'https://schema.org/InStock',
       url: `${SITE_INFO.url}/shoes/${shoe.id}`,
+      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], // 1年後まで有効
     }
   }
 
@@ -146,10 +149,11 @@ export function generateReviewSchema(
   review: Review & {
     user?: { displayName: string; username: string } | null
     shoe?: { brand: string; modelName: string; id: string } | null
+    aiSources?: { sourceUrl: string; sourceTitle: string | null }[] // AIソースを追加
   }
 ) {
-  const rating = typeof review.overallRating === 'number' 
-    ? review.overallRating 
+  const rating = typeof review.overallRating === 'number'
+    ? review.overallRating
     : parseFloat(String(review.overallRating)) || 0
 
   const reviewSchema: Record<string, unknown> = {
@@ -179,6 +183,15 @@ export function generateReviewSchema(
     reviewSchema.author = {
       '@type': 'Organization',
       name: SITE_INFO.name,
+      url: SITE_INFO.url,
+    }
+    // AI要約の場合、引用元を追加 (GEO対策)
+    if (review.aiSources && review.aiSources.length > 0) {
+      reviewSchema.citation = review.aiSources.map(source => ({
+        '@type': 'CreativeWork',
+        name: source.sourceTitle || '参照元',
+        url: source.sourceUrl,
+      }))
     }
   }
 
@@ -188,6 +201,10 @@ export function generateReviewSchema(
       '@type': 'Product',
       name: `${review.shoe.brand} ${review.shoe.modelName}`,
       url: `${SITE_INFO.url}/shoes/${review.shoe.id}`,
+      brand: {
+        '@type': 'Brand',
+        name: review.shoe.brand,
+      },
     }
   }
 
@@ -301,21 +318,34 @@ export function generateArticleSchema(article: {
   }
 }
 
+
 /**
- * 複数の構造化データを1つのスクリプトタグ用に結合
+ * AboutPage構造化データ
  */
-export function combineSchemas(...schemas: Record<string, unknown>[]) {
-  if (schemas.length === 1) {
-    return schemas[0]
-  }
-  
+export function generateAboutPageSchema() {
   return {
     '@context': 'https://schema.org',
-    '@graph': schemas.map(schema => {
-      // @contextを除去してグラフに追加
-      const { '@context': _, ...rest } = schema
-      return rest
-    }),
+    '@type': 'AboutPage',
+    name: '私たちについて',
+    description: SITE_INFO.description,
+    url: `${SITE_INFO.url}/about`,
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_INFO.name,
+      logo: {
+        '@type': 'ImageObject',
+        url: SITE_INFO.logo,
+      },
+    },
   }
 }
 
+/**
+ * 複数のスキーマを結合する (@graphを使用)
+ */
+export function combineSchemas(...schemas: Record<string, unknown>[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': schemas,
+  }
+}
