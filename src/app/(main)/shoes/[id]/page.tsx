@@ -5,16 +5,18 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma/client'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { Badge } from '@/components/ui/Badge'
+import { RatingRadarChart } from '@/components/shoes/RatingRadarChart'
+import { ProsConsList } from '@/components/shoes/ProsConsList'
 import { generateProductSchema, generateBreadcrumbSchema, combineSchemas } from '@/lib/seo/structured-data'
 import { generateShoeMetadata } from '@/lib/seo/metadata'
 import { generatePriceComparisonLinks } from '@/lib/curation/price-comparison'
 import type { Prisma } from '@prisma/client'
 
 // メタデータ生成
-export async function generateMetadata({ 
-  params 
-}: { 
-  params: { id: string } 
+export async function generateMetadata({
+  params
+}: {
+  params: { id: string }
 }): Promise<Metadata> {
   const shoe = await prisma.shoe.findUnique({
     where: { id: params.id },
@@ -175,13 +177,28 @@ export default async function ShoeDetailPage({ params }: { params: { id: string 
     notFound()
   }
 
-  const averageRating =
-    shoe.reviews.length > 0
-      ? shoe.reviews.reduce((sum: number, review) => {
-          const rating = parseFloat(String(review.overallRating)) || 0
-          return sum + rating
-        }, 0) / shoe.reviews.length
-      : 0
+  // Calculate averages
+  const reviews = shoe.reviews
+  const calcAvg = (key: keyof typeof reviews[0]) => {
+    const validReviews = reviews.filter(r => r[key] != null)
+    if (validReviews.length === 0) return 0
+    const sum = validReviews.reduce((acc, r) => acc + Number(r[key]), 0)
+    return sum / validReviews.length
+  }
+
+  const averageRating = calcAvg('overallRating')
+
+  const radarData = [
+    { label: '総合', value: averageRating, fullMark: 10 },
+    { label: '快適性', value: calcAvg('comfortRating'), fullMark: 10 },
+    { label: 'デザイン', value: calcAvg('designRating'), fullMark: 10 },
+    { label: '耐久性', value: calcAvg('durabilityRating'), fullMark: 10 },
+  ]
+
+  // Extract pros/cons from the latest AI review or aggregate
+  const aiReview = reviews.find(r => r.type === 'AI_SUMMARY')
+  const pros = aiReview?.pros || []
+  const cons = aiReview?.cons || []
 
   // 画像を取得（メディアテーブルから、なければimageUrlsから）
   const images: string[] = shoe.media.length > 0
@@ -292,34 +309,34 @@ export default async function ShoeDetailPage({ params }: { params: { id: string 
                   )}
                 </div>
 
-                {/* 評価 */}
-                {averageRating > 0 && (
-                  <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-xl">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-indigo-600">
-                        {averageRating.toFixed(1)}
-                      </div>
-                      <div className="text-xs text-slate-500">/ 10.0</div>
+                {/* 評価チャートとスコア */}
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-6 p-4 bg-slate-50 rounded-xl">
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="text-4xl font-bold text-indigo-600">
+                      {averageRating.toFixed(1)}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1 mb-1">
-                        {[...Array(10)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`h-2 flex-1 rounded-full ${
-                              i < Math.round(averageRating)
-                                ? 'bg-yellow-400'
-                                : 'bg-slate-200'
+                    <div className="text-sm text-slate-500">総合評価 / 10.0</div>
+                    <div className="mt-2 flex justify-center md:justify-start items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-2 w-6 rounded-full ${i < Math.round(averageRating / 2)
+                              ? 'bg-yellow-400'
+                              : 'bg-slate-200'
                             }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        {shoe._count.reviews}件のレビュー
-                      </p>
+                        />
+                      ))}
                     </div>
+                    <p className="text-sm text-slate-600 mt-2">
+                      {shoe._count.reviews}件のレビュー
+                    </p>
                   </div>
-                )}
+
+                  {/* レーダーチャート */}
+                  <div className="flex-shrink-0">
+                    <RatingRadarChart ratings={radarData} size={160} />
+                  </div>
+                </div>
 
                 {/* 価格 */}
                 {shoe.officialPrice && (
@@ -376,6 +393,16 @@ export default async function ShoeDetailPage({ params }: { params: { id: string 
               </div>
             </div>
           </div>
+
+          {/* Pros/Cons セクション */}
+          {(pros.length > 0 || cons.length > 0) && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">
+                AIによる分析まとめ
+              </h2>
+              <ProsConsList pros={pros} cons={cons} />
+            </section>
+          )}
 
           {/* レビューセクション */}
           <section>
